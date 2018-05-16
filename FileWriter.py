@@ -5,7 +5,7 @@ import sys
 
 recordList = []
 recordCount = 0
-options = "1. New record   2. Print records  3. Modify Admin Settings 4. Export Records to File  q. Quit"
+options = "1. New record   2. Print records  3. Modify Admin Settings  4. Export Records to File  5. Delete record  q. Quit"
 ctOptions = "1. New CT record   2. Return  3. Change CT Settings"
 ctSettings = "1. Tax Year  2. Notes  3. Plan Start Date  4. Plan End Date  5. Last Name  6. First Name  7. Return to Previous Menu"
 
@@ -75,7 +75,6 @@ class recordFooter:
         return footer
 
 class inputValidation:
-    #def __init__(self):
 
     def dateValidation(self, x):
         datestring = x
@@ -203,6 +202,8 @@ def menu():
         if selection == '4':
             exportToFile()
             break
+        if selection == '5':
+            deleteRecord()
         if selection == 'q':
             sys.exit(0)
             break
@@ -298,6 +299,23 @@ def printRecords():
         i += 1
     footer = recordFooter(globalSettings.admin, globalSettings.employer, globalSettings.date, globalSettings.time)
     footer.printFooter()
+
+def deleteRecord():
+    try:
+        record = int(input("Delete record number: "))
+        if(record < 1):
+            menu()
+    except ValueError:
+        print("Not a valid number!")
+        menu()
+    try:
+        record -= 1
+        print(record)
+        del recordList[record]
+        menu()
+    except IndexError:
+        print("Record does not exist!")
+        menu()
 
 def modifyAdminSettings():
     while True:
