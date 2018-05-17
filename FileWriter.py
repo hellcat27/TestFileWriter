@@ -5,9 +5,9 @@ import sys
 
 recordList = []
 recordCount = 0
-options = "1. New record   2. Print records  3. Modify Admin Settings  4. Export Records to File  5. Delete record  q. Quit"
-ctOptions = "1. New CT record   2. Return  3. Change CT Settings"
-ctSettings = "1. Tax Year  2. Notes  3. Plan Start Date  4. Plan End Date  5. Last Name  6. First Name  7. Return to Previous Menu"
+options = "1. New record \n2. Print records \n3. Modify Admin Settings \n4. Export Records to File \n5. Delete record \nq. Quit"
+ctOptions = "1. New CT record \n2. Return \n3. Change CT Settings"
+ctSettings = "1. Tax Year \n2. Notes \n3. Plan Start Date \n4. Plan End Date \n5. Last Name \n6. First Name \n7. Return to Previous Menu"
 
 class globalSettings():
     #Global admin settings
@@ -17,7 +17,8 @@ class globalSettings():
     date = date.today().strftime("%m%d%Y")
     time = datetime.now().strftime("%I%M%S")
     version = "1.0"
-    
+
+class ctRecordSettings():
     #CT record settings
     taxYearToggle = False
     notesToggle = False
@@ -41,6 +42,28 @@ class ctRecord:
         self.planEndDate = planEndDate
         self.lastName = lastName
         self.firstName = firstName
+
+class enRecord:
+    def __init__(self, participantID, planName, enrollmentEffectiveDate, participantElectionAmount, enrollmentTerminationDate, employerContributionLevel, employerContributionAmount, primaryReimbursment, alternateReimbursment, enrolledInClaimsPackage, electionAmountIndicator, hdapCoverageLevel, planYearStartDate, termsAccepted, dateTermsAccepted, timeTermsAccepted, changeDate, spendDown):
+        self.recordType = 'EN'
+        self.participantID = participantID
+        self.planName = planName
+        self.enrollmentEffectiveDate = enrollmentEffectiveDate
+        self.participantElectionAmount = participantElectionAmount
+        self.enrollmentTerminationDate = enrollmentTerminationDate
+        self.employerContributionLevel = employerContributionLevel
+        self.employerContributionAmount = employerContributionAmount
+        self.primaryReimbursment = primaryReimbursment
+        self.alternateReimbursment = alternateReimbursment
+        self.enrolledInClaimsPackage = enrolledInClaimsPackage
+        self.electionAmountIndicator = electionAmountIndicator
+        self.hdapCoverageLevel = hdapCoverageLevel
+        self.planYearStartDate = planYearStartDate
+        self.termsAccepted = termsAccepted
+        self.dateTermsAccepted = dateTermsAccepted
+        self.timeTermsAccepted = timeTermsAccepted
+        self.changeDate = changeDate
+        self.spendDown = spendDown
 
 class recordHeader:
     def __init__(self, admincode, employercode, syncflag, fileversion, submitdate, submittime):
@@ -79,11 +102,11 @@ class inputValidation:
     def dateValidation(self, x):
         datestring = x
         try:
-            if(x == 'n'):
+            if(x == ''):
                 return ''
-            date = datetime.strptime(datestring, '%m/%d/%Y')
+            date = datetime.strptime(datestring, '%m%d%Y')
         except:
-            print("Invalid date. Proper format for date is MM/DD/YYYY. Or type n to skip.")
+            print("Invalid date. Proper format for date is MMDDYYYY.")
             datestring = inputValidation.dateValidation(input(""))
         return datestring
         
@@ -91,12 +114,12 @@ class inputValidation:
 def getSettings():
 
     def getCtRecordSettings():
-        globalSettings.taxYearToggle = config.getboolean('ctRecordSettings', 'taxYearToggle')
-        globalSettings.notesToggle = config.getboolean('ctRecordSettings', 'notesToggle')
-        globalSettings.planStartDateToggle = config.getboolean('ctRecordSettings', 'planStartDateToggle')
-        globalSettings.planEndDateToggle = config.getboolean('ctRecordSettings', 'planEndDateToggle')
-        globalSettings.lastNameToggle = config.getboolean('ctRecordSettings', 'lastNameToggle')
-        globalSettings.firstNameToggle = config.getboolean('ctRecordSettings', 'firstNameToggle')
+        ctRecordSettings.taxYearToggle = config.getboolean('ctRecordSettings', 'taxYearToggle')
+        ctRecordSettings.notesToggle = config.getboolean('ctRecordSettings', 'notesToggle')
+        ctRecordSettings.planStartDateToggle = config.getboolean('ctRecordSettings', 'planStartDateToggle')
+        ctRecordSettings.planEndDateToggle = config.getboolean('ctRecordSettings', 'planEndDateToggle')
+        ctRecordSettings.lastNameToggle = config.getboolean('ctRecordSettings', 'lastNameToggle')
+        ctRecordSettings.firstNameToggle = config.getboolean('ctRecordSettings', 'firstNameToggle')
         print('CT Config Loaded.')
 
     config = configparser.SafeConfigParser()
@@ -109,22 +132,22 @@ def getSettings():
 
 def toggleCTSettings():
     while True:
-        toggles = ('Tax Year: {} | Notes: {} | Plan Start Date: {} | Plan End Date: {} | Last Name: {} | First Name: {} |').format(globalSettings.taxYearToggle, globalSettings.notesToggle, globalSettings.planStartDateToggle, globalSettings.planEndDateToggle, globalSettings.lastNameToggle, globalSettings.firstNameToggle)
+        toggles = ('Tax Year: {} | Notes: {} | Plan Start Date: {} | Plan End Date: {} | Last Name: {} | First Name: {} |').format(ctRecordSettings.taxYearToggle, ctRecordSettings.notesToggle, ctRecordSettings.planStartDateToggle, ctRecordSettings.planEndDateToggle, ctRecordSettings.lastNameToggle, ctRecordSettings.firstNameToggle)
         print(toggles)
         print(ctSettings)
         selection = input("")
         if selection == '1':
-            globalSettings.taxYearToggle = not globalSettings.taxYearToggle
+            ctRecordSettings.taxYearToggle = not ctRecordSettings.taxYearToggle
         if selection == '2':
-            globalSettings.notesToggle = not globalSettings.notesToggle
+            ctRecordSettings.notesToggle = not ctRecordSettings.notesToggle
         if selection == '3':
-            globalSettings.planStartDateToggle = not globalSettings.planStartDateToggle
+            ctRecordSettings.planStartDateToggle = not ctRecordSettings.planStartDateToggle
         if selection == '4':
-            globalSettings.planEndDateToggle = not globalSettings.planEndDateToggle
+            ctRecordSettings.planEndDateToggle = not ctRecordSettings.planEndDateToggle
         if selection == '5':
-            globalSettings.lastNameToggle = not globalSettings.lastNameToggle
+            ctRecordSettings.lastNameToggle = not ctRecordSettings.lastNameToggle
         if selection == '6':
-            globalSettings.firstNameToggle = not globalSettings.firstNameToggle
+            ctRecordSettings.firstNameToggle = not ctRecordSettings.firstNameToggle
         if selection == '7':
             newRecord()
             break
@@ -187,6 +210,10 @@ def incrementCount():
     global recordCount
     recordCount += 1
 
+def decrementCount():
+    global recordCount
+    recordCount -= 1
+
 def menu():
     while True:
         print(options)
@@ -228,8 +255,6 @@ def exportToFile():
 
     menu()
 
-
-
 def newCtRecord():
     participantID = input("Participant ID?")
     planName = input("Plan name?")
@@ -239,32 +264,32 @@ def newCtRecord():
     contributionAmount = input("Contribution Amount?")
     amountType = input("Amount Type?")
     
-    if globalSettings.taxYearToggle == True:
+    if ctRecordSettings.taxYearToggle == True:
         taxYear = input("Tax Year?")
     else:
         taxYear = ""
     
-    if globalSettings.notesToggle == True:
+    if ctRecordSettings.notesToggle == True:
         notes = input("Notes?")
     else:
         notes = ""
 
-    if globalSettings.planStartDateToggle == True:
+    if ctRecordSettings.planStartDateToggle == True:
         planStartDate = inputValidation.dateValidation(input("Plan year start date?"))
     else:
         planStartDate = ""
 
-    if globalSettings.planEndDateToggle == True:
+    if ctRecordSettings.planEndDateToggle == True:
         planEndDate = inputValidation.dateValidation(input("Plan year end date?"))
     else:
         planEndDate = ""
 
-    if globalSettings.lastNameToggle == True:    
+    if ctRecordSettings.lastNameToggle == True:    
         lastName = input("Last name?")
     else:
         lastName = ""
 
-    if globalSettings.firstNameToggle == True:    
+    if ctRecordSettings.firstNameToggle == True:    
         firstName = input("First name?")
     else:
         firstName = ""
@@ -274,6 +299,13 @@ def newCtRecord():
     incrementCount()
 
     newRecord()
+
+def newENRecord():
+    participantID = input("Participant ID?")
+    planName = input("Plan name?")
+    enrollmentEffectiveDate = input("Enrollment effective date?")
+    participantElectionAmount = input("Participant election amount?")
+
     
 def newRecord():
     while True:
@@ -310,8 +342,8 @@ def deleteRecord():
         menu()
     try:
         record -= 1
-        print(record)
         del recordList[record]
+        decrementCount()
         menu()
     except IndexError:
         print("Record does not exist!")
@@ -341,7 +373,9 @@ def modifyAdminSettings():
 
 #Program flow
 globalSettings = globalSettings()
+ctRecordSettings = ctRecordSettings()
 inputValidation = inputValidation()
 
 getSettings()
 menu()
+
