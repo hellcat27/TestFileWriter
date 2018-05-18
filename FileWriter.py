@@ -3,11 +3,7 @@ from decimal import *
 import configparser
 import sys
 
-recordList = []
-recordCount = 0
-options = "1. New record \n2. Print records \n3. Modify Admin Settings \n4. Export Records to File \n5. Delete record \nq. Quit"
-ctOptions = "1. New CT record \n2. Return \n3. Change CT Settings"
-ctSettings = "1. Tax Year \n2. Notes \n3. Plan Start Date \n4. Plan End Date \n5. Last Name \n6. First Name \n7. Return to Previous Menu"
+
 
 class globalSettings():
     #Global admin settings
@@ -19,13 +15,28 @@ class globalSettings():
     version = "1.0"
 
 class ctRecordSettings():
-    #CT record settings
     taxYearToggle = False
     notesToggle = False
     planStartDateToggle = False
     planEndDateToggle = False
     lastNameToggle = False
     firstNameToggle = False
+
+class enRecordSettings():
+    enrollmentTerminationDateToggle = False
+    employerContributionLevelToggle = False
+    employerContributionAmountToggle = False
+    primaryReimbursmentToggle = False
+    alternateReimbursmentToggle = False
+    enrolledInClaimsPackageToggle = False
+    electionAmountIndicatorToggle = False
+    hdapCoverageLevelToggle = False
+    planYearStartDateToggle = False
+    termsAcceptedToggle = False
+    dateTermsAcceptedToggle = False
+    timeTermsAcceptedToggle = False
+    changeDateToggle = False
+    spendDownToggle = False
 
 class ctRecord:
     def __init__(self, participantID, planName, contributionDate, contributionDescription, contributionAmount, amountType, taxYear, notes, planStartDate, planEndDate, lastName, firstName):
@@ -122,13 +133,33 @@ def getSettings():
         ctRecordSettings.firstNameToggle = config.getboolean('ctRecordSettings', 'firstNameToggle')
         print('CT Config Loaded.')
 
+    def getEnRecordSettings():
+        enRecordSettings.participantElectionAmountToggle = config.getboolean('enRecordSettings', 'participantElectionAmountToggle')
+        enRecordSettings.enrollmentTerminationDateToggle = config.getboolean('enRecordSettings', 'enrollmentTerminationDateToggle')
+        enRecordSettings.employerContributionLevelToggle = config.getboolean('enRecordSettings', 'employerContributionLevelToggle')
+        enRecordSettings.employerContributionAmountToggle = config.getboolean('enRecordSettings', 'employerContributionAmountToggle')
+        enRecordSettings.primaryReimbursmentToggle = config.getboolean('enRecordSettings', 'primaryReimbursmentToggle')
+        enRecordSettings.alternateReimbursmentToggle = config.getboolean('enRecordSettings', 'alternateReimbursmentToggle')
+        enRecordSettings.enrolledInClaimsPackageToggle = config.getboolean('enRecordSettings', 'enrolledInClaimsPackageToggle')
+        enRecordSettings.electionAmountIndicatorToggle = config.getboolean('enRecordSettings', 'electionAmountIndicatorToggle')
+        enRecordSettings.hdapCoverageLevelToggle = config.getboolean('enRecordSettings', 'hdapCoverageLevelToggle')
+        enRecordSettings.planYearStartDateToggle = config.getboolean('enRecordSettings', 'planYearStartDateToggle')
+        enRecordSettings.termsAcceptedToggle = config.getboolean('enRecordSettings', 'termsAcceptedToggle')
+        enRecordSettings.dateTermsAcceptedToggle = config.getboolean('enRecordSettings', 'dateTermsAcceptedToggle')
+        enRecordSettings.timeTermsAcceptedToggle = config.getboolean('enRecordSettings', 'timeTermsAcceptedToggle')
+        enRecordSettings.changeDateToggle = config.getboolean('enRecordSettings', 'changeDateToggle')
+        enRecordSettings.spendDownToggle = config.getboolean('enRecordSettings', 'spendDownToggle')
+        print('EN Config Loaded.')
+
+
     config = configparser.SafeConfigParser()
 
     try:
         config.read('config.ini')
         getCtRecordSettings()
+        getEnRecordSettings()
     except IOError:
-        print("Could not load configuration file. Using default settings.")
+        print("Could not load configuration file(s). Using default settings.")
 
 def toggleCTSettings():
     while True:
@@ -215,25 +246,15 @@ def decrementCount():
     recordCount -= 1
 
 def menu():
-    while True:
-        print(options)
-        selection = input("")
-        if selection == '1':
-            newRecord()
-            break
-        if selection == '2':
-            printRecords()
-        if selection == '3':
-            modifyAdminSettings()
-            break
-        if selection == '4':
-            exportToFile()
-            break
-        if selection == '5':
-            deleteRecord()
-        if selection == 'q':
-            sys.exit(0)
-            break
+    try:
+        for key in sorted(options):
+            print(key,'=> ',options[key].__name__)
+        selection = input("=>")
+        while True:
+            options.get(selection,"")()
+            selection = input("=>")
+    except TypeError:
+        menu()
 
 def exportToFile():
     i = 1
@@ -247,6 +268,8 @@ def exportToFile():
     for record in recordList:
         if(record.recordType == 'CT'):
             file.write('[{}]{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(i, record.recordType, record.participantID, record.planName, record.contributionDate, record.contributionDescription, record.ContributionAmount, record.amountType, record.taxYear, record.notes, record.planStartDate, record.planEndDate, record.lastName, record.firstName) + "\n")
+        if(record.recordType == 'EN'):
+            file.write('[{}]{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(i, record.recordType, record.participantID, record.planName, record.enrollmentEffectiveDate, record.participantElectionAmount, record.enrollmentTerminationDate, record.employerContributionLevel, record.employerContributionAmount, record.primaryReimbursment, record.alternateReimbursment, record.enrolledInClaimsPackage, record.electionAmountIndicator, record.hdapCoverageLevel, record.planYearStartDate, record.termsAccepted, record.dateTermsAccepted, record.timeTermsAccepted, record.changeDate, record.spendDown) + "\n")
         i += 1
 
     footer = recordFooter(globalSettings.admin, globalSettings.employer, globalSettings.date, globalSettings.time)
@@ -306,20 +329,96 @@ def newENRecord():
     enrollmentEffectiveDate = input("Enrollment effective date?")
     participantElectionAmount = input("Participant election amount?")
 
+    if enRecordSettings.enrollmentTerminationDateToggle == True:
+        enrollmentTerminationDate = input("Enrollment termination date?")
+    else:
+        enrollmentTerminationDate = ""
+
+    if enRecordSettings.employerContributionLevelToggle == True:
+        employerContributionLevel == input("Employer Contribution Level?")
+    else:
+        employerContributionLevel = ""
+
+    if enRecordSettings.employerContributionAmountToggle == True:
+        employerContributionAmount = input("Employer contribution amount?")
+    else:
+        employerContributionAmount = ""
+
+    if enRecordSettings.primaryReimbursmentToggle == True:
+        primaryReimbursment = input("Primary reimbursment method?")
+    else:
+        primaryReimbursment = ""
+
+    if enRecordSettings.alternateReimbursmentToggle == True:
+        alternateReimbursment = input("Alternate reimbursement method?")
+    else:
+        alternateReimbursment = ""
+    
+    if enRecordSettings.enrolledInClaimsPackageToggle == True:
+        enrolledInClaimsPackage = input("Enrolled in claims package?")
+    else:
+        enrolledInClaimsPackage = ""
+
+    if enRecordSettings.electionAmountIndicatorToggle == True:
+        electionAmountIndicator = input("Election amount indicator?")
+    else:
+        electionAmountIndicator = ""
+
+    if enRecordSettings.hdapCoverageLevelToggle == True:
+        hdapCoverageLevel = input("HDAP coverage level?")
+    else:
+        hdapCoverageLevel = ""
+
+    if enRecordSettings.planYearStartDateToggle == True:
+        planYearStartDate = input("Plan year start date?")
+    else:
+        planYearStartDate = ""
+
+    if enRecordSettings.termsAcceptedToggle == True:
+        termsAccepted = input("Terms accepted?")
+    else:
+        termsAccepted = ""
+
+    if enRecordSettings.dateTermsAcceptedToggle == True:
+        dateTermsAccepted = input("Date terms were accepted?")
+    else:
+        dateTermsAccepted = ""
+
+    if enRecordSettings.timeTermsAcceptedToggle == True:
+        timeTermsAccepted = input("Time terms were accepted?")
+    else:
+        timeTermsAccepted = ""
+
+    if enRecordSettings.changeDateToggle == True:
+        changeDate = input("Change date?")
+    else:
+        changeDate = ""
+
+    if enRecordSettings.spendDownToggle == True:
+        spendDown = input("Spend down?")
+    else:
+        spendDown = ""
+
+    record = enRecord(participantID, planName, enrollmentEffectiveDate, participantElectionAmount, enrollmentTerminationDate, employerContributionLevel, employerContributionAmount, primaryReimbursment, alternateReimbursment, enrolledInClaimsPackage, electionAmountIndicator, hdapCoverageLevel, planYearStartDate, termsAccepted, dateTermsAccepted, timeTermsAccepted, changeDate, spendDown)
+    recordList.append(record)
+    incrementCount()
+
+    newRecord()
     
 def newRecord():
-    while True:
-        print(ctOptions)
-        selection = input("")
-        if selection == '1':
-            newCtRecord()
-            break
-        if selection == '2':
-            menu()
-            break
-        if selection == '3':
-            toggleCTSettings()
-            break
+    try:
+        for key in sorted(recordOptions):
+            print(key,'=>',recordOptions[key].__name__)
+        selection = input("=>")
+        while True:
+            recordOptions.get(selection,"")()
+            selection = input("=>")
+    except TypeError:
+        menu()
+
+def quitProgram():
+    print("quit")
+    sys.exit(0)
 
 def printRecords():
     i = 1
@@ -328,6 +427,8 @@ def printRecords():
     for record in recordList:
         if(record.recordType == 'CT'):
             print('[{}]{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(i, record.recordType, record.participantID, record.planName, record.contributionDate, record.contributionDescription, record.ContributionAmount, record.amountType, record.taxYear, record.notes, record.planStartDate, record.planEndDate, record.lastName, record.firstName))
+        if(record.recordType == 'EN'):
+            print('[{}]{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(i, record.recordType, record.participantID, record.planName, record.enrollmentEffectiveDate, record.participantElectionAmount, record.enrollmentTerminationDate, record.employerContributionLevel, record.employerContributionAmount, record.primaryReimbursment, record.alternateReimbursment, record.enrolledInClaimsPackage, record.electionAmountIndicator, record.hdapCoverageLevel, record.planYearStartDate, record.termsAccepted, record.dateTermsAccepted, record.timeTermsAccepted, record.changeDate, record.spendDown))
         i += 1
     footer = recordFooter(globalSettings.admin, globalSettings.employer, globalSettings.date, globalSettings.time)
     footer.printFooter()
@@ -370,6 +471,11 @@ def modifyAdminSettings():
             menu()
             break
 
+recordList = []
+recordCount = 0
+options = {'1':newRecord,'2':printRecords,'3':modifyAdminSettings,'4':exportToFile,'5':deleteRecord, '6':quitProgram}
+recordOptions = {'1':newCtRecord,'2':toggleCTSettings,'3':newENRecord, '4':menu}#"1. New CT record \n2. Return \n3. Change CT Settings"
+ctSettings = "1. Tax Year \n2. Notes \n3. Plan Start Date \n4. Plan End Date \n5. Last Name \n6. First Name \n7. Return to Previous Menu"
 
 #Program flow
 globalSettings = globalSettings()
